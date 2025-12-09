@@ -1,5 +1,3 @@
-# TODO: Change Project Title
+# cfcoach (codeforces coach)
 
-TODO: Write a short description of your project
-
-> **Note:** While this project may deviate from the template, the core commit and pre-commit rules still apply. Please review the [pre-commit guidelines](./docs/pre-commit.md) before contributing.
+Simple util to analyze your codeforces activity to recommend you tasks
