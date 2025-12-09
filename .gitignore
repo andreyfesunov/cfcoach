@@ -1,0 +1,8 @@
+# build
+/target
+
+# ides
+/.idea
+
+# envs
+.env

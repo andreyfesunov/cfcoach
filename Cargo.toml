@@ -1,0 +1,12 @@
+[workspace]
+resolver = "3"
+
+members = [
+    "crates/cli",
+    "crates/auth",
+    "crates/config"
+]
+
+[workspace.dependencies]
+openidconnect = "4.0.1"
+dotenvy = "0.15.7"
