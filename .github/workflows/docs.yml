@@ -11,15 +11,15 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
-    name: Build
+    name: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-      - name: Configure cache
-        uses: Swatinem/rust-cache@v2
+      #- name: Configure cache
+      #  uses: Swatinem/rust-cache@v2
       - name: Setup pages
         id: pages
         uses: actions/configure-pages@v5
@@ -34,7 +34,7 @@ jobs:
         with:
           path: target/doc
   deploy:
-    name: Deploy
+    name: deploy
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
