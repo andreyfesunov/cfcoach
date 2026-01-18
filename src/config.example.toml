@@ -1,5 +1,5 @@
 [codeforces]
 issuer = "https://codeforces.com"
 redirect_uri = "http://localhost:3000"
-client_id = 
-client_secret = 
+client_id =
+client_secret =

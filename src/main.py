@@ -6,7 +6,7 @@ codeforces_repository = CodeforcesRepository(
     issuer=config.codeforces.issuer,
     client_id=config.codeforces.client_id,
     client_secret=config.codeforces.client_secret,
-    redirect_uri=config.codeforces.redirect_uri
+    redirect_uri=config.codeforces.redirect_uri,
 )
 
 print(codeforces_repository.get_auth_url())

@@ -2,6 +2,7 @@ from pydantic import BaseModel, HttpUrl, SecretStr
 from oic.oic import Client
 from oic.utils.authn.client import CLIENT_AUTHN_METHOD
 
+
 class CodeforcesRepository(BaseModel):
     issuer: HttpUrl
     redirect_uri: HttpUrl

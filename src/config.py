@@ -9,8 +9,10 @@ class CodeforcesConfig(BaseModel):
     redirect_uri: HttpUrl
     client_secret: SecretStr
 
+
 class Config(BaseModel):
     codeforces: CodeforcesConfig
+
 
 def get_config_from_toml(path: Path = Path("config.toml")) -> Config:
     return Config(**load_toml(path))
