@@ -12,6 +12,15 @@ from infrastructure.repositories.user_contest_participation import (
 from infrastructure.repositories.user_problem_status import (
     UserProblemStatusRepositoryImpl,
 )
+from infrastructure.repositories.user_problem_rating import (
+    UserProblemRatingRepositoryImpl,
+)
+from infrastructure.repositories.recommendation_cache import (
+    RecommendationCacheRepositoryImpl,
+)
+from infrastructure.repositories.user_preferences import (
+    UserPreferencesRepositoryImpl,
+)
 from infrastructure.events.event_bus import EventBus
 from domain.repositories.codeforces import CodeforcesRepository
 from domain.repositories.users import UserRepository
@@ -23,7 +32,16 @@ from domain.repositories.user_contest_participation import (
     UserContestParticipationRepository,
 )
 from domain.repositories.user_problem_status import UserProblemStatusRepository
+from domain.repositories.user_problem_rating import UserProblemRatingRepository
+from domain.repositories.recommendation_cache import RecommendationCacheRepository
+from domain.repositories.user_preferences import UserPreferencesRepository
 from application.usecases.authenticate_user import AuthenticateUserUseCase
+from application.services.recommendation_service import RecommendationService
+from application.recommenders.content_based import ContentBasedRecommender
+from application.recommenders.collaborative import CollaborativeFilteringRecommender
+from application.recommenders.rating_based import RatingBasedRecommender
+from application.recommenders.hybrid import HybridRecommender
+from application.recommenders.matrix_factorization import MatrixFactorizationRecommender
 
 
 _config = None
@@ -168,3 +186,98 @@ def get_problem_status_repository() -> UserProblemStatusRepository:
             config.database.db_path_path
         )
     return _problem_status_repository
+
+
+_user_problem_rating_repository = None
+
+
+def get_user_problem_rating_repository() -> UserProblemRatingRepository:
+    global _user_problem_rating_repository
+    if _user_problem_rating_repository is None:
+        config = get_config()
+        _user_problem_rating_repository = UserProblemRatingRepositoryImpl(
+            config.database.db_path_path
+        )
+    return _user_problem_rating_repository
+
+
+_recommendation_cache_repository = None
+
+
+def get_recommendation_cache_repository() -> RecommendationCacheRepository:
+    global _recommendation_cache_repository
+    if _recommendation_cache_repository is None:
+        config = get_config()
+        _recommendation_cache_repository = RecommendationCacheRepositoryImpl(
+            config.database.db_path_path
+        )
+    return _recommendation_cache_repository
+
+
+_user_preferences_repository = None
+
+
+def get_user_preferences_repository() -> UserPreferencesRepository:
+    global _user_preferences_repository
+    if _user_preferences_repository is None:
+        config = get_config()
+        _user_preferences_repository = UserPreferencesRepositoryImpl(
+            config.database.db_path_path
+        )
+    return _user_preferences_repository
+
+
+_recommendation_service = None
+
+
+def get_recommendation_service() -> RecommendationService:
+    global _recommendation_service
+    if _recommendation_service is None:
+        config = get_config()
+
+        content_based = ContentBasedRecommender(
+            user_problem_status_repository=get_problem_status_repository(),
+            problem_repository=get_problem_repository(),
+            user_repository=get_user_repository(),
+            submission_repository=get_submission_repository(),
+        )
+
+        collaborative = CollaborativeFilteringRecommender(
+            user_problem_status_repository=get_problem_status_repository(),
+            user_repository=get_user_repository(),
+            problem_repository=get_problem_repository(),
+        )
+
+        rating_based = RatingBasedRecommender(
+            user_problem_rating_repository=get_user_problem_rating_repository(),
+            user_problem_status_repository=get_problem_status_repository(),
+            problem_repository=get_problem_repository(),
+            user_repository=get_user_repository(),
+        )
+
+        hybrid = HybridRecommender(
+            content_based=content_based,
+            collaborative=collaborative,
+        )
+
+        matrix_factorization = MatrixFactorizationRecommender(
+            user_problem_status_repository=get_problem_status_repository(),
+            user_repository=get_user_repository(),
+            problem_repository=get_problem_repository(),
+        )
+
+        recommenders = {
+            "content_based": content_based,
+            "collaborative": collaborative,
+            "rating_based": rating_based,
+            "hybrid": hybrid,
+            "matrix_factorization": matrix_factorization,
+        }
+
+        _recommendation_service = RecommendationService(
+            recommenders=recommenders,
+            user_preferences_repository=get_user_preferences_repository(),
+            cache_repository=get_recommendation_cache_repository(),
+            cache_ttl_hours=config.recommendations.cache_ttl_hours,
+        )
+    return _recommendation_service

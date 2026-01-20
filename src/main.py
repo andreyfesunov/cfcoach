@@ -11,6 +11,8 @@ from rest.dependencies import (
     get_rating_change_repository,
     get_participation_repository,
     get_problem_status_repository,
+    get_recommendation_service,
+    get_recommendation_cache_repository,
     get_config,
 )
 from application.handlers.user_data_ingestion import UserDataIngestionHandler
@@ -18,8 +20,11 @@ from application.jobs.sync_user_data import SyncUserDataJob
 from application.jobs.collect_global_data import CollectGlobalDataJob
 from application.jobs.update_user_participation import UpdateUserParticipationJob
 from application.jobs.update_problem_status import UpdateProblemStatusJob
+from application.jobs.train_recommendation_models import TrainRecommendationModelsJob
+from application.jobs.update_recommendation_cache import UpdateRecommendationCacheJob
 from application.jobs.scheduler import MultiScheduler
 from domain.events.user_authenticated import UserAuthenticatedEvent
+from rest.routers.recommendations import router as recommendations_router
 import uvicorn
 
 
@@ -77,6 +82,22 @@ async def setup_jobs():
         global_data_job.execute, config.jobs.global_data_collection_interval_hours
     )
 
+    training_job = TrainRecommendationModelsJob(
+        recommendation_service=get_recommendation_service(),
+    )
+    scheduler.add_job(
+        training_job.execute, config.recommendations.model_training_interval_hours
+    )
+
+    cache_job = UpdateRecommendationCacheJob(
+        recommendation_service=get_recommendation_service(),
+        cache_repository=get_recommendation_cache_repository(),
+        user_repository=get_user_repository(),
+    )
+    scheduler.add_job(
+        cache_job.execute, config.recommendations.cache_update_interval_hours
+    )
+
     await scheduler.start_all()
     return scheduler
 
@@ -92,6 +113,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(auth_router)
+app.include_router(recommendations_router)
 
 
 if __name__ == "__main__":

@@ -13,3 +13,9 @@ db_path = "data.db"
 [jobs]
 sync_interval_hours = 0.0166666667
 global_data_collection_interval_hours = 24.0
+
+[recommendations]
+model_training_interval_hours = 6.0
+cache_update_interval_hours = 1.0
+default_recommender_type = "content_based"
+cache_ttl_hours = 1.0

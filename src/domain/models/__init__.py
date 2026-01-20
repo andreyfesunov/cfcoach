@@ -5,6 +5,9 @@ from domain.models.contest import Contest
 from domain.models.rating_change import RatingChange
 from domain.models.user_contest_participation import UserContestParticipation
 from domain.models.user_problem_status import UserProblemStatus
+from domain.models.user_problem_rating import UserProblemRating
+from domain.models.recommendation_cache import RecommendationCache
+from domain.models.user_preferences import UserPreferences
 
 __all__ = [
     "User",
@@ -14,4 +17,7 @@ __all__ = [
     "RatingChange",
     "UserContestParticipation",
     "UserProblemStatus",
+    "UserProblemRating",
+    "RecommendationCache",
+    "UserPreferences",
 ]

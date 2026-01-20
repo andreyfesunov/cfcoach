@@ -27,11 +27,19 @@ class JobConfig(BaseModel):
     global_data_collection_interval_hours: float
 
 
+class RecommendationConfig(BaseModel):
+    model_training_interval_hours: float
+    cache_update_interval_hours: float
+    default_recommender_type: str
+    cache_ttl_hours: float
+
+
 class Config(BaseModel):
     codeforces: CodeforcesConfig
     session: SessionConfig
     database: DatabaseConfig
     jobs: JobConfig
+    recommendations: RecommendationConfig
 
 
 def get_config_from_toml(path: Path = Path("config.toml")) -> Config:

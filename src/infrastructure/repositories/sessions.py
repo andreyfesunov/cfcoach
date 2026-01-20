@@ -26,3 +26,6 @@ class SessionRepository:
             return None
         except jwt.InvalidTokenError:
             return None
+
+    def get_user_id(self, token: str) -> Optional[int]:
+        return self.verify_session(token)
