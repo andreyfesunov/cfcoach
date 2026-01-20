@@ -1,5 +1,11 @@
 [codeforces]
 issuer = "https://codeforces.com"
-redirect_uri = "http://localhost:3000"
+redirect_uri = "http://localhost:3000/auth/callback/"
 client_id =
 client_secret =
+
+[session]
+secret_key =
+
+[database]
+db_path = "data.db"

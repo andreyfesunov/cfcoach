@@ -1,12 +1,11 @@
-from config import get_config_from_toml
-from infrastructure.repositories.codeforces import CodeforcesRepository
+from fastapi import FastAPI
+from rest.routers.auth import router as auth_router
+import uvicorn
 
-config = get_config_from_toml()
-codeforces_repository = CodeforcesRepository(
-    issuer=config.codeforces.issuer,
-    client_id=config.codeforces.client_id,
-    client_secret=config.codeforces.client_secret,
-    redirect_uri=config.codeforces.redirect_uri,
-)
 
-print(codeforces_repository.get_auth_url())
+app = FastAPI()
+
+app.include_router(auth_router)
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=3000)
