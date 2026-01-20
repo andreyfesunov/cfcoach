@@ -9,3 +9,6 @@ secret_key =
 
 [database]
 db_path = "data.db"
+
+[jobs]
+sync_interval_hours = 0.0166666667

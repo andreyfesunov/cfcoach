@@ -19,3 +19,7 @@ class UserRepository(ABC):
     @abstractmethod
     async def find_by_id(self, user_id: int) -> User | None:
         pass
+
+    @abstractmethod
+    async def find_all(self) -> list[User]:
+        pass

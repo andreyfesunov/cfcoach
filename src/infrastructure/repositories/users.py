@@ -95,3 +95,25 @@ class UserRepositoryImpl(UserRepository):
                         else None,
                     )
                 return None
+
+    async def find_all(self) -> list[User]:
+        await self._init_db()
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT * FROM users") as cursor:
+                rows = await cursor.fetchall()
+                return [
+                    User(
+                        id=row["id"],
+                        external_id=row["external_id"],
+                        username=row["username"],
+                        access_token=row["access_token"],
+                        created_at=datetime.fromisoformat(row["created_at"])
+                        if row["created_at"]
+                        else None,
+                        updated_at=datetime.fromisoformat(row["updated_at"])
+                        if row["updated_at"]
+                        else None,
+                    )
+                    for row in rows
+                ]

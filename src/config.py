@@ -22,10 +22,15 @@ class DatabaseConfig(BaseModel):
         return Path(self.db_path)
 
 
+class JobConfig(BaseModel):
+    sync_interval_hours: float
+
+
 class Config(BaseModel):
     codeforces: CodeforcesConfig
     session: SessionConfig
     database: DatabaseConfig
+    jobs: JobConfig
 
 
 def get_config_from_toml(path: Path = Path("config.toml")) -> Config:

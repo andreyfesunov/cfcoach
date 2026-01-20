@@ -166,3 +166,67 @@ class CodeforcesRepositoryImpl(BaseModel, CodeforcesRepository):
                 pass
 
         return user_info
+
+    def get_user_submissions(
+        self, handle: str, access_token: str, from_index: int = 1, count: int = 1000
+    ) -> list[dict]:
+        with httpx.Client() as http_client:
+            response = http_client.get(
+                "https://codeforces.com/api/user.status",
+                params={"handle": handle, "from": from_index, "count": count},
+                headers={"Authorization": f"Bearer {access_token}"},
+                timeout=30.0,
+            )
+            response.raise_for_status()
+            result = response.json()
+            if result.get("status") == "OK":
+                return result.get("result", [])
+            raise ValueError(
+                f"Failed to get submissions: {result.get('comment', 'Unknown error')}"
+            )
+
+    def get_user_rating(self, handle: str, access_token: str) -> list[dict]:
+        with httpx.Client() as http_client:
+            response = http_client.get(
+                "https://codeforces.com/api/user.rating",
+                params={"handle": handle},
+                headers={"Authorization": f"Bearer {access_token}"},
+                timeout=30.0,
+            )
+            response.raise_for_status()
+            result = response.json()
+            if result.get("status") == "OK":
+                return result.get("result", [])
+            raise ValueError(
+                f"Failed to get rating: {result.get('comment', 'Unknown error')}"
+            )
+
+    def get_contest_list(self, gym: bool = False) -> list[dict]:
+        with httpx.Client() as http_client:
+            response = http_client.get(
+                "https://codeforces.com/api/contest.list",
+                params={"gym": str(gym).lower()},
+                timeout=30.0,
+            )
+            response.raise_for_status()
+            result = response.json()
+            if result.get("status") == "OK":
+                return result.get("result", [])
+            raise ValueError(
+                f"Failed to get contest list: {result.get('comment', 'Unknown error')}"
+            )
+
+    def get_problem_set(self) -> list[dict]:
+        with httpx.Client() as http_client:
+            response = http_client.get(
+                "https://codeforces.com/api/problemset.problems",
+                timeout=30.0,
+            )
+            response.raise_for_status()
+            result = response.json()
+            if result.get("status") == "OK":
+                problems = result.get("result", {}).get("problems", [])
+                return problems
+            raise ValueError(
+                f"Failed to get problem set: {result.get('comment', 'Unknown error')}"
+            )
