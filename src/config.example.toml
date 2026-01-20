@@ -1,6 +1,6 @@
 [codeforces]
 issuer = "https://codeforces.com"
-redirect_uri = "http://localhost:3000/auth/callback/"
+redirect_uri = "http://localhost:3000/api/auth/callback/"
 client_id =
 client_secret =
 

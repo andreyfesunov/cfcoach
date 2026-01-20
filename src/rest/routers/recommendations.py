@@ -13,7 +13,7 @@ from rest.dependencies import (
 )
 
 
-router = APIRouter(prefix="/recommendations", tags=["recommendations"])
+router = APIRouter(prefix="/api/recommendations", tags=["recommendations"])
 
 
 class RatingRequest(BaseModel):

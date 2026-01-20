@@ -11,7 +11,7 @@ from rest.dependencies import (
 )
 
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.get("/login")
