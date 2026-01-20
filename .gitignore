@@ -181,3 +181,6 @@ junit.xml
 
 # config
 config.toml
+
+# sqlite db
+data.db
