@@ -5,7 +5,7 @@ from typing import Optional
 
 class User(BaseModel):
     id: Optional[int] = None
-    external_id: str
+    external_id: Optional[str] = None
     username: Optional[str] = None
     access_token: Optional[str] = None
     created_at: Optional[datetime] = None

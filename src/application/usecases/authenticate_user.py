@@ -60,10 +60,13 @@ class AuthenticateUserUseCase:
         if user.id is None:
             raise ValueError("User ID is not set")
 
+        if user.external_id is None:
+            raise ValueError("External ID is not set for authenticated user")
+
         event = UserAuthenticatedEvent(
             user_id=user.id,
             external_id=user.external_id,
-            username=user.username,
+            username=user.username or "",
             access_token=access_token,
         )
         self.event_bus.publish(event)

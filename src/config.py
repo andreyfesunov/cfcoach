@@ -24,6 +24,7 @@ class DatabaseConfig(BaseModel):
 
 class JobConfig(BaseModel):
     sync_interval_hours: float
+    global_data_collection_interval_hours: float
 
 
 class Config(BaseModel):

@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from rest.routers.auth import router as auth_router
 from rest.dependencies import (
@@ -8,18 +9,18 @@ from rest.dependencies import (
     get_problem_repository,
     get_contest_repository,
     get_rating_change_repository,
+    get_participation_repository,
+    get_problem_status_repository,
     get_config,
 )
 from application.handlers.user_data_ingestion import UserDataIngestionHandler
 from application.jobs.sync_user_data import SyncUserDataJob
-from application.jobs.scheduler import Scheduler
+from application.jobs.collect_global_data import CollectGlobalDataJob
+from application.jobs.update_user_participation import UpdateUserParticipationJob
+from application.jobs.update_problem_status import UpdateProblemStatusJob
+from application.jobs.scheduler import MultiScheduler
 from domain.events.user_authenticated import UserAuthenticatedEvent
 import uvicorn
-
-
-app = FastAPI()
-
-app.include_router(auth_router)
 
 
 def setup_event_handlers():
@@ -40,20 +41,57 @@ def setup_event_handlers():
 
 async def setup_jobs():
     config = get_config()
-    scheduler = Scheduler(interval_hours=config.jobs.sync_interval_hours)
-    job = SyncUserDataJob(
+    scheduler = MultiScheduler()
+
+    sync_job = SyncUserDataJob(
         user_repository=get_user_repository(),
         codeforces_repository=get_codeforces_repository(),
         submission_repository=get_submission_repository(),
         rating_change_repository=get_rating_change_repository(),
     )
-    await scheduler.start(job.execute)
+    scheduler.add_job(sync_job.execute, config.jobs.sync_interval_hours)
+
+    participation_job = UpdateUserParticipationJob(
+        user_repository=get_user_repository(),
+        submission_repository=get_submission_repository(),
+        rating_change_repository=get_rating_change_repository(),
+        participation_repository=get_participation_repository(),
+    )
+    scheduler.add_job(participation_job.execute, config.jobs.sync_interval_hours)
+
+    problem_status_job = UpdateProblemStatusJob(
+        user_repository=get_user_repository(),
+        submission_repository=get_submission_repository(),
+        problem_status_repository=get_problem_status_repository(),
+    )
+    scheduler.add_job(problem_status_job.execute, config.jobs.sync_interval_hours)
+
+    global_data_job = CollectGlobalDataJob(
+        codeforces_repository=get_codeforces_repository(),
+        contest_repository=get_contest_repository(),
+        problem_repository=get_problem_repository(),
+        submission_repository=get_submission_repository(),
+        user_repository=get_user_repository(),
+    )
+    scheduler.add_job(
+        global_data_job.execute, config.jobs.global_data_collection_interval_hours
+    )
+
+    await scheduler.start_all()
+    return scheduler
 
 
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     setup_event_handlers()
-    await setup_jobs()
+    scheduler = await setup_jobs()
+    yield
+    await scheduler.stop_all()
+
+
+app = FastAPI(lifespan=lifespan)
+
+app.include_router(auth_router)
 
 
 if __name__ == "__main__":

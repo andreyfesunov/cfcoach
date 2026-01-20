@@ -168,13 +168,20 @@ class CodeforcesRepositoryImpl(BaseModel, CodeforcesRepository):
         return user_info
 
     def get_user_submissions(
-        self, handle: str, access_token: str, from_index: int = 1, count: int = 1000
+        self,
+        handle: str,
+        access_token: str = "",
+        from_index: int = 1,
+        count: int = 1000,
     ) -> list[dict]:
         with httpx.Client() as http_client:
+            headers = {}
+            if access_token:
+                headers["Authorization"] = f"Bearer {access_token}"
             response = http_client.get(
                 "https://codeforces.com/api/user.status",
                 params={"handle": handle, "from": from_index, "count": count},
-                headers={"Authorization": f"Bearer {access_token}"},
+                headers=headers if headers else None,
                 timeout=30.0,
             )
             response.raise_for_status()
@@ -229,4 +236,40 @@ class CodeforcesRepositoryImpl(BaseModel, CodeforcesRepository):
                 return problems
             raise ValueError(
                 f"Failed to get problem set: {result.get('comment', 'Unknown error')}"
+            )
+
+    def get_rated_users(self, active_only: bool = True) -> list[dict]:
+        with httpx.Client() as http_client:
+            response = http_client.get(
+                "https://codeforces.com/api/user.ratedList",
+                params={"activeOnly": str(active_only).lower()},
+                timeout=30.0,
+            )
+            response.raise_for_status()
+            result = response.json()
+            if result.get("status") == "OK":
+                return result.get("result", [])
+            raise ValueError(
+                f"Failed to get rated users: {result.get('comment', 'Unknown error')}"
+            )
+
+    def get_contest_standings(
+        self, contest_id: int, from_index: int = 1, count: int = 100
+    ) -> list[dict]:
+        with httpx.Client() as http_client:
+            response = http_client.get(
+                "https://codeforces.com/api/contest.standings",
+                params={
+                    "contestId": contest_id,
+                    "from": from_index,
+                    "count": count,
+                },
+                timeout=30.0,
+            )
+            response.raise_for_status()
+            result = response.json()
+            if result.get("status") == "OK":
+                return result.get("result", {}).get("rows", [])
+            raise ValueError(
+                f"Failed to get contest standings: {result.get('comment', 'Unknown error')}"
             )

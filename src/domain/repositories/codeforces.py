@@ -18,7 +18,11 @@ class CodeforcesRepository(ABC):
 
     @abstractmethod
     def get_user_submissions(
-        self, handle: str, access_token: str, from_index: int = 1, count: int = 1000
+        self,
+        handle: str,
+        access_token: str = "",
+        from_index: int = 1,
+        count: int = 1000,
     ) -> list[dict]:
         pass
 
@@ -32,4 +36,14 @@ class CodeforcesRepository(ABC):
 
     @abstractmethod
     def get_problem_set(self) -> list[dict]:
+        pass
+
+    @abstractmethod
+    def get_rated_users(self, active_only: bool = True) -> list[dict]:
+        pass
+
+    @abstractmethod
+    def get_contest_standings(
+        self, contest_id: int, from_index: int = 1, count: int = 100
+    ) -> list[dict]:
         pass

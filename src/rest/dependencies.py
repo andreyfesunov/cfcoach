@@ -6,6 +6,12 @@ from infrastructure.repositories.submissions import SubmissionRepositoryImpl
 from infrastructure.repositories.problems import ProblemRepositoryImpl
 from infrastructure.repositories.contests import ContestRepositoryImpl
 from infrastructure.repositories.rating_changes import RatingChangeRepositoryImpl
+from infrastructure.repositories.user_contest_participation import (
+    UserContestParticipationRepositoryImpl,
+)
+from infrastructure.repositories.user_problem_status import (
+    UserProblemStatusRepositoryImpl,
+)
 from infrastructure.events.event_bus import EventBus
 from domain.repositories.codeforces import CodeforcesRepository
 from domain.repositories.users import UserRepository
@@ -13,6 +19,10 @@ from domain.repositories.submissions import SubmissionRepository
 from domain.repositories.problems import ProblemRepository
 from domain.repositories.contests import ContestRepository
 from domain.repositories.rating_changes import RatingChangeRepository
+from domain.repositories.user_contest_participation import (
+    UserContestParticipationRepository,
+)
+from domain.repositories.user_problem_status import UserProblemStatusRepository
 from application.usecases.authenticate_user import AuthenticateUserUseCase
 
 
@@ -132,3 +142,29 @@ def get_authenticate_user_usecase() -> AuthenticateUserUseCase:
             event_bus=get_event_bus(),
         )
     return _authenticate_user_usecase
+
+
+_participation_repository = None
+
+
+def get_participation_repository() -> UserContestParticipationRepository:
+    global _participation_repository
+    if _participation_repository is None:
+        config = get_config()
+        _participation_repository = UserContestParticipationRepositoryImpl(
+            config.database.db_path_path
+        )
+    return _participation_repository
+
+
+_problem_status_repository = None
+
+
+def get_problem_status_repository() -> UserProblemStatusRepository:
+    global _problem_status_repository
+    if _problem_status_repository is None:
+        config = get_config()
+        _problem_status_repository = UserProblemStatusRepositoryImpl(
+            config.database.db_path_path
+        )
+    return _problem_status_repository

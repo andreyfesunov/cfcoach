@@ -32,3 +32,30 @@ class Scheduler:
             except Exception:
                 pass
             await asyncio.sleep(self.interval_seconds)
+
+
+class MultiScheduler:
+    def __init__(self) -> None:
+        self._jobs: list[tuple[Callable[[], Awaitable[None]], float]] = []
+        self._schedulers: list[Scheduler] = []
+        self._running = False
+
+    def add_job(
+        self, job: Callable[[], Awaitable[None]], interval_hours: float
+    ) -> None:
+        self._jobs.append((job, interval_hours))
+
+    async def start_all(self) -> None:
+        if self._running:
+            return
+        self._running = True
+        for job, interval_hours in self._jobs:
+            scheduler = Scheduler(interval_hours)
+            await scheduler.start(job)
+            self._schedulers.append(scheduler)
+
+    async def stop_all(self) -> None:
+        self._running = False
+        for scheduler in self._schedulers:
+            await scheduler.stop()
+        self._schedulers.clear()
