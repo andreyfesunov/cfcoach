@@ -14,7 +14,9 @@ class UserContestParticipationRepositoryImpl(UserContestParticipationRepository)
         self.db_path = db_path
 
     async def _init_db(self):
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
+            await db.execute("PRAGMA journal_mode=WAL")
+            await db.execute("PRAGMA busy_timeout=30000")
             await db.execute(
                 """
                 CREATE TABLE IF NOT EXISTS user_contest_participation (
@@ -43,7 +45,7 @@ class UserContestParticipationRepositoryImpl(UserContestParticipationRepository)
         self, user_id: int, contest_id: int
     ) -> Optional[UserContestParticipation]:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
                 "SELECT * FROM user_contest_participation WHERE user_id = ? AND contest_id = ?",
@@ -71,7 +73,7 @@ class UserContestParticipationRepositoryImpl(UserContestParticipationRepository)
         self, participation: UserContestParticipation
     ) -> UserContestParticipation:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             cursor = await db.execute(
                 """INSERT OR IGNORE INTO user_contest_participation
                    (user_id, contest_id, participated, first_submission_time, last_submission_time)
@@ -93,7 +95,7 @@ class UserContestParticipationRepositoryImpl(UserContestParticipationRepository)
         self, participation: UserContestParticipation
     ) -> UserContestParticipation:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             await db.execute(
                 """UPDATE user_contest_participation
                    SET participated = ?, first_submission_time = ?,
@@ -111,7 +113,7 @@ class UserContestParticipationRepositoryImpl(UserContestParticipationRepository)
 
     async def find_by_user_id(self, user_id: int) -> list[UserContestParticipation]:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
                 "SELECT * FROM user_contest_participation WHERE user_id = ?",
@@ -140,7 +142,7 @@ class UserContestParticipationRepositoryImpl(UserContestParticipationRepository)
         self, contest_id: int
     ) -> list[UserContestParticipation]:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
                 "SELECT * FROM user_contest_participation WHERE contest_id = ?",

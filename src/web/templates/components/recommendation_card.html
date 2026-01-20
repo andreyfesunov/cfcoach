@@ -1,0 +1,53 @@
+<div class="recommendation-card">
+    <div class="recommendation-card-header">
+        <h3>
+            <a href="{{ get_problem_url(problem.contest_id, problem.problem_index) }}" target="_blank">
+                {{ problem.name or (problem.contest_id|string + problem.problem_index) }}
+            </a>
+        </h3>
+        <div class="recommendation-score">
+            Score: {{ "%.2f"|format(recommendation.score) }}
+        </div>
+    </div>
+    <div class="recommendation-card-body">
+        {% if problem.rating %}
+            <span class="rating rating-{{ get_rating_color(problem.rating) }}">
+                {{ problem.rating }}
+            </span>
+        {% endif %}
+        {% if problem.tags %}
+            <div class="tags">
+                {% for tag in problem.tags %}
+                    <span class="tag">{{ tag }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="recommendation-explanation">
+        <h4>Почему рекомендована:</h4>
+        <p class="main-reason">{{ explanation.main_reason }}</p>
+        {% if explanation.details %}
+            <ul class="details">
+                {% for detail in explanation.details %}
+                    <li>{{ detail }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if explanation.similar_problems %}
+            <p class="similar-problems">
+                Похожие решенные задачи: {{ explanation.similar_problems|join(", ") }}
+            </p>
+        {% endif %}
+        {% if explanation.tags_improvement %}
+            <p class="tags-improvement">
+                Улучшит навыки в: {{ explanation.tags_improvement|join(", ") }}
+            </p>
+        {% endif %}
+    </div>
+    <div class="recommendation-actions">
+        <a href="{{ get_problem_url(problem.contest_id, problem.problem_index) }}"
+           class="btn btn-primary" target="_blank">Решить</a>
+        <a href="/problems/{{ problem.contest_id }}/{{ problem.problem_index }}/rate"
+           class="btn btn-secondary">Оценить</a>
+    </div>
+</div>

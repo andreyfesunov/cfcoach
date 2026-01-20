@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Задачи - CFCoach{% endblock %}
+
+{% block content %}
+<div class="problems">
+    <h1>Задачи</h1>
+
+    <div class="filters">
+        <form method="get" action="/problems">
+            <div class="filter-group">
+                <label for="min_rating">Мин. рейтинг:</label>
+                <input type="number" name="min_rating" id="min_rating" value="{{ min_rating or '' }}">
+            </div>
+            <div class="filter-group">
+                <label for="max_rating">Макс. рейтинг:</label>
+                <input type="number" name="max_rating" id="max_rating" value="{{ max_rating or '' }}">
+            </div>
+            <div class="filter-group">
+                <label for="tag">Тег:</label>
+                <input type="text" name="tag" id="tag" value="{{ tag or '' }}">
+            </div>
+            <div class="filter-group">
+                <label for="contest_id">ID контеста:</label>
+                <input type="number" name="contest_id" id="contest_id" value="{{ contest_id or '' }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Применить фильтры</button>
+        </form>
+    </div>
+
+    <div class="problems-list">
+        {% for problem in problems %}
+            {% set is_solved = (problem.contest_id, problem.problem_index) in solved_problems %}
+            <div class="problem-item {% if is_solved %}solved{% endif %}">
+                <div class="problem-header">
+                    <h3>
+                        <a href="{{ get_problem_url(problem.contest_id, problem.problem_index) }}" target="_blank">
+                            {{ problem.name or (problem.contest_id|string + problem.problem_index) }}
+                        </a>
+                    </h3>
+                    {% if problem.rating %}
+                        <span class="rating rating-{{ get_rating_color(problem.rating) }}">
+                            {{ problem.rating }}
+                        </span>
+                    {% endif %}
+                    {% if is_solved %}
+                        <span class="solved-badge">Решено</span>
+                    {% endif %}
+                </div>
+                {% if problem.tags %}
+                    <div class="tags">
+                        {% for tag in problem.tags %}
+                            <span class="tag">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <div class="problem-actions">
+                    <a href="{{ get_problem_url(problem.contest_id, problem.problem_index) }}"
+                       class="btn btn-primary" target="_blank">Решить</a>
+                    <a href="/problems/{{ problem.contest_id }}/{{ problem.problem_index }}/rate"
+                       class="btn btn-secondary">Оценить</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if not problems %}
+        <p>Задачи не найдены. Попробуйте изменить фильтры.</p>
+    {% endif %}
+</div>
+{% endblock %}

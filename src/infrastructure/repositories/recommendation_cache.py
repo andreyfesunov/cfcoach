@@ -13,7 +13,9 @@ class RecommendationCacheRepositoryImpl(RecommendationCacheRepository):
         self.db_path = db_path
 
     async def _init_db(self):
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
+            await db.execute("PRAGMA journal_mode=WAL")
+            await db.execute("PRAGMA busy_timeout=30000")
             await db.execute(
                 """
                 CREATE TABLE IF NOT EXISTS recommendation_cache (
@@ -41,7 +43,7 @@ class RecommendationCacheRepositoryImpl(RecommendationCacheRepository):
         self, user_id: int, recommender_type: str
     ) -> Optional[RecommendationCache]:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
                 "SELECT * FROM recommendation_cache WHERE user_id = ? AND recommender_type = ? AND (expires_at IS NULL OR expires_at > datetime('now'))",
@@ -66,7 +68,7 @@ class RecommendationCacheRepositoryImpl(RecommendationCacheRepository):
 
     async def create(self, cache: RecommendationCache) -> RecommendationCache:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             expires_at_str = cache.expires_at.isoformat() if cache.expires_at else None
             cursor = await db.execute(
                 """INSERT OR REPLACE INTO recommendation_cache
@@ -87,7 +89,7 @@ class RecommendationCacheRepositoryImpl(RecommendationCacheRepository):
 
     async def update(self, cache: RecommendationCache) -> RecommendationCache:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             expires_at_str = cache.expires_at.isoformat() if cache.expires_at else None
             await db.execute(
                 """UPDATE recommendation_cache
@@ -105,7 +107,7 @@ class RecommendationCacheRepositoryImpl(RecommendationCacheRepository):
 
     async def delete_expired(self) -> None:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             await db.execute(
                 "DELETE FROM recommendation_cache WHERE expires_at IS NOT NULL AND expires_at < datetime('now')"
             )
@@ -115,7 +117,7 @@ class RecommendationCacheRepositoryImpl(RecommendationCacheRepository):
         self, user_id: int, recommender_type: str
     ) -> None:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             await db.execute(
                 "DELETE FROM recommendation_cache WHERE user_id = ? AND recommender_type = ?",
                 (user_id, recommender_type),

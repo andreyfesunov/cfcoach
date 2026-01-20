@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль - CFCoach{% endblock %}
+
+{% block content %}
+<div class="profile">
+    <h1>Профиль пользователя</h1>
+
+    <div class="profile-info">
+        <h2>{{ current_user.username or 'Пользователь' }}</h2>
+        <p>ID: {{ current_user.id }}</p>
+    </div>
+
+    <div class="stats-section">
+        <h3>Статистика</h3>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h4>Решено задач</h4>
+                <p class="stat-value">{{ solved_count }}</p>
+            </div>
+            <div class="stat-card">
+                <h4>Попыток</h4>
+                <p class="stat-value">{{ attempted_count }}</p>
+            </div>
+            <div class="stat-card">
+                <h4>Участие в контестах</h4>
+                <p class="stat-value">{{ participations_count }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if rating_history %}
+        <div class="rating-history">
+            <h3>История рейтинга</h3>
+            <div class="rating-list">
+                {% for change in rating_history %}
+                    <div class="rating-item">
+                        <span class="contest-name">{{ change.contest_name }}</span>
+                        <span class="rating-change">
+                            {{ change.old_rating }} → {{ change.new_rating }}
+                        </span>
+                        <span class="rank">Rank: {{ change.rank }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="recent-submissions">
+        <h3>Последние сабмиты</h3>
+        <div class="submissions-list">
+            {% for submission in submissions %}
+                <div class="submission-item">
+                    <span class="problem-name">{{ submission.problem_name or (submission.contest_id|string + submission.problem_index) }}</span>
+                    <span class="verdict verdict-{{ submission.verdict|lower }}">{{ submission.verdict }}</span>
+                    <span class="language">{{ submission.programming_language }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

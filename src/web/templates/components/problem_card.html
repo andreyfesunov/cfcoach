@@ -1,0 +1,30 @@
+<div class="problem-card">
+    <div class="problem-card-header">
+        <h3>
+            <a href="{{ get_problem_url(problem.contest_id, problem.problem_index) }}" target="_blank">
+                {{ problem.name or (problem.contest_id|string + problem.problem_index) }}
+            </a>
+        </h3>
+        {% if problem.rating %}
+            <span class="rating rating-{{ get_rating_color(problem.rating) }}">
+                {{ problem.rating }}
+            </span>
+        {% endif %}
+    </div>
+    <div class="problem-card-body">
+        {% if problem.tags %}
+            <div class="tags">
+                {% for tag in problem.tags %}
+                    <span class="tag">{{ tag }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if problem.contest_id %}
+            <div class="contest-link">
+                <a href="{{ get_contest_url(problem.contest_id) }}" target="_blank">
+                    Контест {{ problem.contest_id }}
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>

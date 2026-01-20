@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Рекомендации - CFCoach{% endblock %}
+
+{% block content %}
+<div class="recommendations">
+    <h1>Рекомендации задач</h1>
+
+    <div class="recommender-selector">
+        <form method="get" action="/recommendations">
+            <label for="recommender_type">Тип рекомендательной системы:</label>
+            <select name="recommender_type" id="recommender_type">
+                {% for type in available_types %}
+                    <option value="{{ type }}" {% if type == current_type %}selected{% endif %}>
+                        {{ type }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Применить</button>
+        </form>
+    </div>
+
+    <div class="recommendations-list">
+        {% for item in recommendations %}
+            {% set rec = item.recommendation %}
+            {% set problem = item.problem %}
+            {% set explanation = item.explanation %}
+            {% set contest_id = problem.contest_id if problem else rec.contest_id %}
+            {% set problem_index = problem.problem_index if problem else rec.problem_index %}
+            {% set problem_name = problem.name if problem else (contest_id|string + problem_index) if contest_id and problem_index else "Unknown Problem" %}
+
+            <div class="recommendation-card">
+                <div class="recommendation-header">
+                    <h3>
+                        <a href="{{ get_problem_url(contest_id, problem_index) }}" target="_blank">
+                            {{ problem_name }}
+                        </a>
+                    </h3>
+                    <div class="recommendation-meta">
+                        {% if problem and problem.rating %}
+                            <span class="rating rating-{{ get_rating_color(problem.rating) }}">
+                                {{ problem.rating }}
+                            </span>
+                        {% endif %}
+                        <span class="score">Score: {{ "%.2f"|format(rec.score) }}</span>
+                    </div>
+                </div>
+
+                {% if problem and problem.tags %}
+                    <div class="tags">
+                        {% for tag in problem.tags %}
+                            <span class="tag">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="explanation">
+                    <h4>Почему рекомендована:</h4>
+                    <p class="main-reason">{{ explanation.main_reason }}</p>
+                    {% if explanation.details %}
+                        <ul class="details">
+                            {% for detail in explanation.details %}
+                                <li>{{ detail }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    {% if explanation.similar_problems %}
+                        <p class="similar">
+                            Похожие решенные задачи: {{ explanation.similar_problems|join(", ") }}
+                        </p>
+                    {% endif %}
+                    {% if explanation.tags_improvement %}
+                        <p class="tags-improvement">
+                            Улучшит навыки в: {{ explanation.tags_improvement|join(", ") }}
+                        </p>
+                    {% endif %}
+                </div>
+
+                {% if contest_id and problem_index %}
+                <div class="actions">
+                    <a href="{{ get_problem_url(contest_id, problem_index) }}"
+                       class="btn btn-primary" target="_blank">Решить</a>
+                    <a href="/problems/{{ contest_id }}/{{ problem_index }}/rate"
+                       class="btn btn-secondary">Оценить</a>
+                </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if not recommendations %}
+        <p>Нет рекомендаций. Решите несколько задач, чтобы получить рекомендации.</p>
+    {% endif %}
+</div>
+{% endblock %}

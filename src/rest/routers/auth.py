@@ -61,3 +61,10 @@ async def oauth_callback(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Authentication failed: {str(e)}")
+
+
+@router.get("/logout")
+async def logout():
+    redirect_response = RedirectResponse(url="/")
+    redirect_response.delete_cookie(key="session_token")
+    return redirect_response

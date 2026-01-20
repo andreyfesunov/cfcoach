@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Контесты - CFCoach{% endblock %}
+
+{% block content %}
+<div class="contests">
+    <h1>Контесты</h1>
+
+    <div class="filters">
+        <form method="get" action="/contests">
+            <div class="filter-group">
+                <label for="phase">Фаза:</label>
+                <select name="phase" id="phase">
+                    <option value="">Все</option>
+                    <option value="BEFORE" {% if phase == 'BEFORE' %}selected{% endif %}>До начала</option>
+                    <option value="CODING" {% if phase == 'CODING' %}selected{% endif %}>Идет</option>
+                    <option value="PENDING_SYSTEM_TEST" {% if phase == 'PENDING_SYSTEM_TEST' %}selected{% endif %}>Ожидает системных тестов</option>
+                    <option value="SYSTEM_TEST" {% if phase == 'SYSTEM_TEST' %}selected{% endif %}>Системные тесты</option>
+                    <option value="FINISHED" {% if phase == 'FINISHED' %}selected{% endif %}>Завершен</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="contest_type">Тип:</label>
+                <select name="contest_type" id="contest_type">
+                    <option value="">Все</option>
+                    <option value="CF" {% if contest_type == 'CF' %}selected{% endif %}>CF</option>
+                    <option value="IOI" {% if contest_type == 'IOI' %}selected{% endif %}>IOI</option>
+                    <option value="ICPC" {% if contest_type == 'ICPC' %}selected{% endif %}>ICPC</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Применить фильтры</button>
+        </form>
+    </div>
+
+    <div class="contests-list">
+        {% for contest in contests %}
+            {% set is_participated = contest.contest_id in participations %}
+            <div class="contest-item {% if is_participated %}participated{% endif %}">
+                <div class="contest-header">
+                    <h3>
+                        <a href="{{ get_contest_url(contest.contest_id) }}" target="_blank">
+                            {{ contest.name }}
+                        </a>
+                    </h3>
+                    {% if is_participated %}
+                        <span class="participated-badge">Участвовал</span>
+                    {% endif %}
+                </div>
+                <div class="contest-info">
+                    <p>ID: {{ contest.contest_id }}</p>
+                    {% if contest.phase %}
+                        <p>Фаза: {{ contest.phase }}</p>
+                    {% endif %}
+                    {% if contest.contest_type %}
+                        <p>Тип: {{ contest.contest_type }}</p>
+                    {% endif %}
+                </div>
+                <div class="contest-actions">
+                    <a href="{{ get_contest_url(contest.contest_id) }}"
+                       class="btn btn-primary" target="_blank">Открыть</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if not contests %}
+        <p>Контесты не найдены.</p>
+    {% endif %}
+</div>
+{% endblock %}

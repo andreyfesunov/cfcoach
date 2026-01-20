@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Оценка задачи - CFCoach{% endblock %}
+
+{% block content %}
+<div class="rate">
+    <h1>Оценка задачи</h1>
+
+    <div class="problem-info">
+        <h2>
+            <a href="{{ get_problem_url(problem.contest_id, problem.problem_index) }}" target="_blank">
+                {{ problem.name or (problem.contest_id|string + problem.problem_index) }}
+            </a>
+        </h2>
+        {% if problem.rating %}
+            <span class="rating rating-{{ get_rating_color(problem.rating) }}">
+                {{ problem.rating }}
+            </span>
+        {% endif %}
+    </div>
+
+    <div class="rating-form-section">
+        <h3>Ваша оценка</h3>
+        <form method="post" action="/problems/{{ problem.contest_id }}/{{ problem.problem_index }}/rate">
+            <div class="form-group">
+                <label for="difficulty_rating">Сложность (1-5):</label>
+                <input type="number" name="difficulty_rating" id="difficulty_rating"
+                       min="1" max="5"
+                       value="{{ existing_rating.difficulty_rating if existing_rating else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="usefulness_rating">Полезность (1-5):</label>
+                <input type="number" name="usefulness_rating" id="usefulness_rating"
+                       min="1" max="5"
+                       value="{{ existing_rating.usefulness_rating if existing_rating else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="interest_rating">Интересность (1-5):</label>
+                <input type="number" name="interest_rating" id="interest_rating"
+                       min="1" max="5"
+                       value="{{ existing_rating.interest_rating if existing_rating else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="quality_rating">Качество (1-5):</label>
+                <input type="number" name="quality_rating" id="quality_rating"
+                       min="1" max="5"
+                       value="{{ existing_rating.quality_rating if existing_rating else '' }}">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Сохранить оценку</button>
+        </form>
+    </div>
+
+    {% if ratings_count > 0 %}
+        <div class="community-ratings">
+            <h3>Оценки сообщества</h3>
+            <div class="avg-ratings">
+                <p>Средняя сложность: {{ "%.1f"|format(avg_difficulty) }}/5 ({{ ratings_count }} оценок)</p>
+                <p>Средняя полезность: {{ "%.1f"|format(avg_usefulness) }}/5</p>
+                <p>Средняя интересность: {{ "%.1f"|format(avg_interest) }}/5</p>
+                <p>Среднее качество: {{ "%.1f"|format(avg_quality) }}/5</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

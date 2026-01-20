@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Прогресс - CFCoach{% endblock %}
+
+{% block content %}
+<div class="progress">
+    <h1>Прогресс обучения</h1>
+
+    <div class="progress-stats">
+        <div class="stat-card">
+            <h3>Всего решено</h3>
+            <p class="stat-value">{{ total_solved }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Всего сабмитов</h3>
+            <p class="stat-value">{{ total_submissions }}</p>
+        </div>
+    </div>
+
+    {% if rating_history %}
+        <div class="rating-chart-section">
+            <h3>История рейтинга</h3>
+            <div class="chart-container">
+                <canvas id="ratingChart"></canvas>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if solved_timeline %}
+        <div class="solved-timeline-section">
+            <h3>Решенные задачи по времени</h3>
+            <div class="chart-container">
+                <canvas id="solvedChart"></canvas>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    {% if rating_history %}
+    const ratingCtx = document.getElementById('ratingChart');
+    new Chart(ratingCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for item in rating_history %}'{{ item.time }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Рейтинг',
+                data: [{% for item in rating_history %}{{ item.rating }}{% if not loop.last %},{% endif %}{% endfor %}],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        }
+    });
+    {% endif %}
+
+    {% if solved_timeline %}
+    const solvedCtx = document.getElementById('solvedChart');
+    new Chart(solvedCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for item in solved_timeline %}'Week {{ item.week }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Решено задач',
+                data: [{% for item in solved_timeline %}{{ item.count }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)'
+            }]
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Настройки - CFCoach{% endblock %}
+
+{% block content %}
+<div class="settings">
+    <h1>Настройки</h1>
+
+    <div class="settings-section">
+        <h2>Рекомендательная система</h2>
+        <form method="post" action="/settings">
+            <label for="recommender_type">Выберите тип рекомендательной системы:</label>
+            <select name="recommender_type" id="recommender_type">
+                {% for type in available_types %}
+                    <option value="{{ type }}" {% if type == current_type %}selected{% endif %}>
+                        {{ type }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+        </form>
+
+        <div class="recommender-info">
+            <h3>Описание типов:</h3>
+            <ul>
+                <li><strong>content_based</strong>: Рекомендации на основе похожих задач, которые вы решали</li>
+                <li><strong>collaborative</strong>: Рекомендации на основе похожих пользователей</li>
+                <li><strong>rating_based</strong>: Рекомендации на основе оценок сообщества</li>
+                <li><strong>hybrid</strong>: Комбинация content-based и collaborative</li>
+                <li><strong>matrix_factorization</strong>: ML-модель для рекомендаций</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

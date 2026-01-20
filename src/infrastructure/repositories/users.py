@@ -11,7 +11,9 @@ class UserRepositoryImpl(UserRepository):
         self.db_path = db_path
 
     async def _init_db(self):
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
+            await db.execute("PRAGMA journal_mode=WAL")
+            await db.execute("PRAGMA busy_timeout=30000")
             await db.execute(
                 """
                 CREATE TABLE IF NOT EXISTS users (
@@ -31,7 +33,7 @@ class UserRepositoryImpl(UserRepository):
 
     async def find_by_external_id(self, external_id: str) -> User | None:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
                 "SELECT * FROM users WHERE external_id = ?", (external_id,)
@@ -54,7 +56,7 @@ class UserRepositoryImpl(UserRepository):
 
     async def find_by_username(self, username: str) -> User | None:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
                 "SELECT * FROM users WHERE username = ?", (username,)
@@ -77,7 +79,7 @@ class UserRepositoryImpl(UserRepository):
 
     async def create(self, user: User) -> User:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             cursor = await db.execute(
                 """INSERT INTO users (external_id, username, access_token)
                    VALUES (?, ?, ?)""",
@@ -89,7 +91,7 @@ class UserRepositoryImpl(UserRepository):
 
     async def update(self, user: User) -> User:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             await db.execute(
                 """UPDATE users
                    SET username = ?, access_token = ?, updated_at = CURRENT_TIMESTAMP
@@ -101,7 +103,7 @@ class UserRepositoryImpl(UserRepository):
 
     async def find_by_id(self, user_id: int) -> User | None:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
                 "SELECT * FROM users WHERE id = ?", (user_id,)
@@ -124,7 +126,7 @@ class UserRepositoryImpl(UserRepository):
 
     async def find_all(self) -> list[User]:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute("SELECT * FROM users") as cursor:
                 rows = await cursor.fetchall()

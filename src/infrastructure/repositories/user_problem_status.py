@@ -12,7 +12,9 @@ class UserProblemStatusRepositoryImpl(UserProblemStatusRepository):
         self.db_path = db_path
 
     async def _init_db(self):
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
+            await db.execute("PRAGMA journal_mode=WAL")
+            await db.execute("PRAGMA busy_timeout=30000")
             await db.execute(
                 """
                 CREATE TABLE IF NOT EXISTS user_problem_status (
@@ -43,7 +45,7 @@ class UserProblemStatusRepositoryImpl(UserProblemStatusRepository):
         self, user_id: int, contest_id: Optional[int], problem_index: Optional[str]
     ) -> Optional[UserProblemStatus]:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
                 "SELECT * FROM user_problem_status WHERE user_id = ? AND contest_id = ? AND problem_index = ?",
@@ -71,7 +73,7 @@ class UserProblemStatusRepositoryImpl(UserProblemStatusRepository):
 
     async def create(self, status: UserProblemStatus) -> UserProblemStatus:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             cursor = await db.execute(
                 """INSERT OR IGNORE INTO user_problem_status
                    (user_id, contest_id, problem_index, solved, attempts_count,
@@ -94,7 +96,7 @@ class UserProblemStatusRepositoryImpl(UserProblemStatusRepository):
 
     async def update(self, status: UserProblemStatus) -> UserProblemStatus:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             await db.execute(
                 """UPDATE user_problem_status
                    SET solved = ?, attempts_count = ?, first_solved_time = ?,
@@ -113,7 +115,7 @@ class UserProblemStatusRepositoryImpl(UserProblemStatusRepository):
 
     async def find_by_user_id(self, user_id: int) -> list[UserProblemStatus]:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
                 "SELECT * FROM user_problem_status WHERE user_id = ?",
@@ -142,7 +144,7 @@ class UserProblemStatusRepositoryImpl(UserProblemStatusRepository):
 
     async def find_solved_by_user_id(self, user_id: int) -> list[UserProblemStatus]:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
                 "SELECT * FROM user_problem_status WHERE user_id = ? AND solved = 1",
@@ -171,7 +173,7 @@ class UserProblemStatusRepositoryImpl(UserProblemStatusRepository):
 
     async def find_unsolved_by_user_id(self, user_id: int) -> list[UserProblemStatus]:
         await self._init_db()
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path, timeout=30.0) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
                 "SELECT * FROM user_problem_status WHERE user_id = ? AND solved = 0",

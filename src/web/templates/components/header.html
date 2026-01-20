@@ -1,0 +1,21 @@
+<header class="header">
+    <nav class="nav">
+        <div class="nav-brand">
+            <a href="/">CFCoach</a>
+        </div>
+        <div class="nav-links">
+            <a href="/">Главная</a>
+            <a href="/recommendations">Рекомендации</a>
+            <a href="/problems">Задачи</a>
+            <a href="/contests">Контесты</a>
+            <a href="/progress">Прогресс</a>
+            {% if current_user %}
+                <a href="/profile">Профиль</a>
+                <a href="/settings">Настройки</a>
+                <a href="/api/auth/logout">Выход</a>
+            {% else %}
+                <a href="/api/auth/login">Вход</a>
+            {% endif %}
+        </div>
+    </nav>
+</header>
